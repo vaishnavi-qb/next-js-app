@@ -1,0 +1,60 @@
+name: Step 1 — Add graphifyignore
+
+# Grades: learner committed a valid .graphifyignore
+# Then advances README 1 → 2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - ".graphifyignore"
+      - ".github/workflows/1-add-graphifyignore.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check-graphifyignore:
+    name: Check .graphifyignore
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Only run while Step 1 is active
+        id: gate
+        run: |
+          if grep -q '<details id="1" open>' README.md; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Step 1 is not the active step — skipping."
+          fi
+
+      - name: Verify .graphifyignore
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          set -euo pipefail
+          test -f .graphifyignore
+          grep -q 'node_modules' .graphifyignore
+          grep -q '\.next' .graphifyignore
+          echo "OK: .graphifyignore looks good"
+
+      - name: Advance README 1 → 2
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          chmod +x .github/scripts/update-step.sh
+          .github/scripts/update-step.sh 1 2
+
+      - name: Commit README update
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Step 1 complete — show Step 2"
+          git push

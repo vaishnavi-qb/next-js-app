@@ -1,0 +1,59 @@
+name: Step 3 — Cursor integration
+
+# Grades: learner committed .cursor/rules/graphify.mdc
+# Then advances README 3 → 4
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - ".cursor/rules/graphify.mdc"
+      - ".github/workflows/3-cursor-integration.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check-cursor-rule:
+    name: Check Cursor Graphify rule
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Only run while Step 3 is active
+        id: gate
+        run: |
+          if grep -q '<details id="3" open>' README.md; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Step 3 is not the active step — skipping."
+          fi
+
+      - name: Verify .cursor/rules/graphify.mdc
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          set -euo pipefail
+          test -f .cursor/rules/graphify.mdc
+          test -s .cursor/rules/graphify.mdc
+          echo "OK: Cursor Graphify rule found"
+
+      - name: Advance README 3 → 4
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          chmod +x .github/scripts/update-step.sh
+          .github/scripts/update-step.sh 3 4
+
+      - name: Commit README update
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Step 3 complete — show Step 4"
+          git push

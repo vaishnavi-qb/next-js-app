@@ -1,0 +1,61 @@
+name: Step 2 — Install Graphify CLI
+
+# Grades: learner committed graphify-setup/CLI_OK.md
+# Then advances README 2 → 3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "graphify-setup/CLI_OK.md"
+      - ".github/workflows/2-install-graphify-cli.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check-cli-proof:
+    name: Check CLI proof file
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Only run while Step 2 is active
+        id: gate
+        run: |
+          if grep -q '<details id="2" open>' README.md; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Step 2 is not the active step — skipping."
+          fi
+
+      - name: Verify graphify-setup/CLI_OK.md
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          set -euo pipefail
+          test -f graphify-setup/CLI_OK.md
+          test -s graphify-setup/CLI_OK.md
+          echo "OK: CLI proof file found"
+          echo "-----"
+          cat graphify-setup/CLI_OK.md
+
+      - name: Advance README 2 → 3
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          chmod +x .github/scripts/update-step.sh
+          .github/scripts/update-step.sh 2 3
+
+      - name: Commit README update
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Step 2 complete — show Step 3"
+          git push

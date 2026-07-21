@@ -1,0 +1,65 @@
+name: Step 4 — Build first graph
+
+# Grades: learner committed graphify-out/GRAPH_REPORT.md
+# Then advances README 4 → X (finish)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "graphify-out/GRAPH_REPORT.md"
+      - "graphify-out/**"
+      - ".github/workflows/4-build-first-graph.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  check-graph-output:
+    name: Check Graphify output
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Only run while Step 4 is active
+        id: gate
+        run: |
+          if grep -q '<details id="4" open>' README.md; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Step 4 is not the active step — skipping."
+          fi
+
+      - name: Verify graphify-out/GRAPH_REPORT.md
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          set -euo pipefail
+          test -f graphify-out/GRAPH_REPORT.md
+          test -s graphify-out/GRAPH_REPORT.md
+          echo "OK: GRAPH_REPORT.md found"
+          if [[ -f graphify-out/graph.json ]]; then
+            echo "Bonus: graph.json is present"
+          else
+            echo "Note: graph.json not committed (optional)"
+          fi
+
+      - name: Advance README 4 → X
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          chmod +x .github/scripts/update-step.sh
+          .github/scripts/update-step.sh 4 X
+
+      - name: Commit README update
+        if: steps.gate.outputs.active == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Step 4 complete — course finished"
+          git push

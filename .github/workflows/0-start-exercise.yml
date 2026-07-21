@@ -1,0 +1,50 @@
+name: Step 0 — Start exercise
+
+# Runs after the course repo is pushed / created.
+# Opens README Step 1 for the learner.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  start:
+    name: Start Graphify course
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Only advance if Step 0 is still open
+        id: gate
+        run: |
+          if grep -q '<details id="0" open>' README.md; then
+            echo "advance=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "advance=false" >> "$GITHUB_OUTPUT"
+            echo "Course already started — skipping."
+          fi
+
+      - name: Advance README 0 → 1
+        if: steps.gate.outputs.advance == 'true'
+        run: |
+          chmod +x .github/scripts/update-step.sh
+          .github/scripts/update-step.sh 0 1
+
+      - name: Commit README update
+        if: steps.gate.outputs.advance == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Start exercise — show Step 1"
+          git push
