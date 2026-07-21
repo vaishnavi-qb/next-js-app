@@ -32,3 +32,6 @@ next-env.d.ts
 
 # graphify cache (keep GRAPH_REPORT.md / graph.json if you commit them)
 graphify-out/cache/
+
+# local tools
+.tools/
