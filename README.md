@@ -1,35 +1,16 @@
 # Graphify Skills — SimpleShop
 
-_Learn to set up Graphify on a real Next.js shopping app, with automatic checks (like GitHub Skills)._
+<img src="https://octodex.github.com/images/Professortocat_v2.png" align="right" height="200px" />
 
-## Welcome
+Hey vaishnavi-qb!
 
-This is an interactive exercise. Progress is tracked in a GitHub **Issue**, and each completed step posts the **next lesson as a comment** — same idea as [Introduction to GitHub](https://github.com/vaishnavi-qb/skills-introduction-to-github/issues/1).
+Mona here. I'm done preparing your exercise. Hope you enjoy! 💚
 
-### Who is this for
+Remember, it's self-paced so feel free to take a break! ☕️
 
-Beginners who want Graphify + GitHub Skills-style automation.
+[![](https://img.shields.io/badge/Go%20to%20Exercise-%E2%86%92-1f883d?style=for-the-badge&logo=github&labelColor=197935)](https://github.com/vaishnavi-qb/next-js-app/issues/1)
 
-### What you'll learn
+---
 
-- `.graphifyignore`
-- Graphify CLI install
-- Cursor Graphify rule
-- Building `graphify-out/`
+&copy; 2025 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
 
-### How to start
-
-1. Enable Actions: **Settings → Actions → General → Allow all actions**
-2. Workflow permissions: **Read and write**
-3. Push to `main` (or run **Actions → Step 0 # Start Exercise → Run workflow**)
-4. Open **Issues** — look for **Exercise: Graphify Skills — SimpleShop**
-5. Follow the comments on that issue
-
-### Shop app
-
-How to run SimpleShop locally: [docs/SHOP.md](docs/SHOP.md)
-
-```bash
-npm install
-npm run dev
-```
