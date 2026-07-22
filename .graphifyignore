@@ -1,0 +1,12 @@
+.git/
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+.env
+.env.*
+*.log
+*.zip
+package-lock.json
