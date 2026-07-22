@@ -2,7 +2,7 @@
 
 _Learn to set up Graphify on a real Next.js shopping app, with automatic checks (like GitHub Skills)._
 
-<details id="0">
+<details id="0" open>
 <summary><h2>Start here — Welcome</h2></summary>
 
 ### Who is this for
@@ -49,7 +49,7 @@ A checked-in Graphify setup for this repo:
 <!--
   <<< learner step: 1 >>>
 -->
-<details id="1" open>
+<details id="1">
 <summary><h2>Step 1: Add a .graphifyignore</h2></summary>
 
 ### Nice work starting the course
