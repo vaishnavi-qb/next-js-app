@@ -1,67 +1,67 @@
-name: Step 0 — Start exercise
-
-# Creates the exercise issue (like GitHub Skills),
-# posts Step 1 as a comment, and opens README Step 1.
+name: Step 0 # Start Exercise
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-      - master
+  workflow_dispatch:
 
 permissions:
-  contents: write
-  issues: write
+  contents: write # Update Readme
+  actions: write # Disable/enable workflows
+  issues: write # Create issue and comment on issues
+
+env:
+  STEP_1_FILE: ".github/steps/1-add-graphifyignore.md"
 
 jobs:
-  start:
-    name: Start Graphify course
-    if: ${{ !github.event.repository.is_template }}
+  start_exercise:
+    if: |
+      !github.event.repository.is_template
+    name: Start Exercise
+    uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@v0.8.1
+    with:
+      exercise-title: "Graphify Skills — SimpleShop"
+      intro-message: "If you are new to GitHub, you might find your fellow developers use ___**issues**___ to organize their work and collaborate. We will do the same while you set up Graphify on the SimpleShop Next.js app!"
+
+  post_next_step_content:
+    name: Post next step content
     runs-on: ubuntu-latest
+    needs: [start_exercise]
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.start_exercise.outputs.issue-number }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
 
-      - name: Only advance if Step 0 is still open
-        id: gate
+      - name: Get response templates
+        uses: actions/checkout@v4
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.7.0
+
+      - name: Create comment - add step content
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: ${{ env.STEP_1_FILE }}
+
+      - name: Create comment - watching for progress
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
+
+      - name: Disable current workflow and enable next one
         run: |
-          if grep -q '<details id="0" open>' README.md; then
-            echo "advance=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "advance=false" >> "$GITHUB_OUTPUT"
-            echo "Course already started — skipping."
-          fi
-
-      - name: Create exercise issue
-        if: steps.gate.outputs.advance == 'true'
+          gh workflow disable "${{ github.workflow }}"
+          gh workflow enable "Step 1"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x .github/scripts/create-exercise-issue.sh
-          .github/scripts/create-exercise-issue.sh
-
-      - name: Post Step 1 instructions as issue comment
-        if: steps.gate.outputs.advance == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x .github/scripts/post-step-comment.sh
-          .github/scripts/post-step-comment.sh .github/steps/1-add-graphifyignore.md
-
-      - name: Advance README 0 → 1
-        if: steps.gate.outputs.advance == 'true'
-        run: |
-          chmod +x .github/scripts/update-step.sh
-          .github/scripts/update-step.sh 0 1
-
-      - name: Commit README update
-        if: steps.gate.outputs.advance == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git diff --staged --quiet || git commit -m "Start exercise — show Step 1"
-          git push

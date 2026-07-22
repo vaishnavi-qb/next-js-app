@@ -1,17 +1,16 @@
-# Step 1 — Add `.graphifyignore`
+## Step 1: Add a `.graphifyignore`
 
-_Welcome to Graphify Skills!_ 👋
+_Welcome to "Graphify Skills — SimpleShop"!_ :wave:
 
-Graphify should skip junk folders like `node_modules` and `.next`. A **`.graphifyignore`** file does that (same idea as `.gitignore`).
+**What is Graphify?**: Graphify builds a knowledge graph of your project so AI coding assistants (like Cursor) understand your code better.
 
-## Why
+**What is `.graphifyignore`?**: Like `.gitignore`, it tells Graphify which folders to skip — for example `node_modules` and `.next`.
 
-Without ignore rules, Graphify wastes time on dependencies and build output.
+### :keyboard: Activity: Create `.graphifyignore`
 
-## :keyboard: Activity: Create `.graphifyignore`
-
-1. In this repository root (same level as `package.json`), create **`.graphifyignore`**.
-2. Paste:
+1. Open a new browser tab and go to your repository **Code** tab (or use your local clone).
+2. Create a file named **`.graphifyignore`** in the repo root (same level as `package.json`).
+3. Paste this content:
 
 ```gitignore
 .git/
@@ -28,7 +27,7 @@ coverage/
 package-lock.json
 ```
 
-3. Commit and push to `main`:
+4. Commit and push to `main`:
 
 ```bash
 git add .graphifyignore
@@ -36,17 +35,13 @@ git commit -m "Add .graphifyignore for Graphify course"
 git push
 ```
 
-4. Wait about **20 seconds** and watch the **exercise issue** — the bot will check your work and post **Step 2** in the comments.
-
-## How CI grades you
-
-Workflow `1-add-graphifyignore.yml` checks that `.graphifyignore` exists and mentions `node_modules` and `.next`.
+5. Now that your file is pushed, Mona should already be busy checking your work. Give her a moment and keep watch in the comments. You will see progress info and the next lesson.
 
 <details>
-<summary>Having trouble? 🤷</summary>
+<summary>Having trouble? 🤷</summary><br/>
 
-- File name must be exactly `.graphifyignore`.
-- It must include `node_modules/` and `.next/`.
-- Check the **Actions** tab if the job is red.
+- Make sure the file is named exactly `.graphifyignore` (leading dot).
+- It must include `node_modules` and `.next`.
+- Check the **Actions** tab if you do not get feedback.
 
 </details>

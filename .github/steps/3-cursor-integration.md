@@ -1,16 +1,12 @@
-## ✅ Step 2 complete — Graphify CLI proof found!
+## Step 3: Connect Graphify to Cursor
 
-Great — your CLI install is recorded in the repo.
+_Great — your CLI proof looks good!_ :sparkles:
 
----
+**What is a Cursor rule?**: A project file that guides Cursor. Graphify can install `.cursor/rules/graphify.mdc` so the assistant prefers graph queries for this repo.
 
-# Step 3 — Connect Graphify to Cursor
+### :keyboard: Activity: Install the Cursor rule
 
-Wire Graphify into Cursor so the assistant prefers graph queries for this project.
-
-## :keyboard: Activity: Install Cursor rule
-
-1. From the project root:
+1. From your project root:
 
 ```bash
 graphify cursor install --project
@@ -18,7 +14,7 @@ graphify cursor install --project
 
 2. Confirm this file exists: `.cursor/rules/graphify.mdc`
 
-3. Commit and push:
+3. Commit and push to `main`:
 
 ```bash
 git add .cursor/rules/graphify.mdc
@@ -26,35 +22,12 @@ git commit -m "Add Graphify Cursor rule"
 git push
 ```
 
-4. Wait ~20 seconds — the bot will reply on the **exercise issue** with **Step 4**.
-
-## Fallback template
-
-If the CLI cannot write the file, create `.cursor/rules/graphify.mdc` with:
-
-```markdown
----
-description: Prefer Graphify knowledge graph before broad codebase search
-alwaysApply: true
----
-
-# Graphify
-
-For architecture or "how does X work" questions in this repo:
-
-1. Prefer `graphify-out/GRAPH_REPORT.md` and `graphify query "..."` when available.
-2. Use scoped questions instead of reading many files blindly.
-3. Important hubs in SimpleShop include `CartContext`, `products`, and App Router pages under `src/app`.
-```
-
-## How CI grades you
-
-Workflow `3-cursor-integration.yml` checks that `.cursor/rules/graphify.mdc` exists.
+4. Wait about 20 seconds and watch the comments for Step 4.
 
 <details>
-<summary>Having trouble? 🤷</summary>
+<summary>Having trouble? 🤷</summary><br/>
 
-- Use `--project` so the rule is stored in the repo.
-- Path must be `.cursor/rules/graphify.mdc`.
+- Use `--project` so the rule is stored in the repository.
+- Path must be exactly `.cursor/rules/graphify.mdc`.
 
 </details>

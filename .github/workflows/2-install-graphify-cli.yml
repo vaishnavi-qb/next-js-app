@@ -1,69 +1,137 @@
-name: Step 2 — Install Graphify CLI
+name: Step 2 # Install Graphify CLI
 
-# Grades CLI proof file, advances README, posts Step 3 on the exercise issue.
+# Checks Step 2: learner committed graphify-setup/CLI_OK.md
+# Then posts Step 3 on the exercise issue and enables the next workflow.
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-      - master
     paths:
       - "graphify-setup/CLI_OK.md"
-      - ".github/workflows/2-install-graphify-cli.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: write
   issues: write
 
+env:
+  STEP_3_FILE: ".github/steps/3-cursor-integration.md"
+
 jobs:
-  check-cli-proof:
-    name: Check CLI proof file
-    if: ${{ !github.event.repository.is_template }}
+  find_exercise:
+    name: Find Exercise Issue
+    uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@v0.7.0
+
+  check_step_work:
+    name: Check step work
     runs-on: ubuntu-latest
+    needs: find_exercise
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Only run while Step 2 is active
-        id: gate
-        run: |
-          if grep -q '<details id="2" open>' README.md; then
-            echo "active=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "active=false" >> "$GITHUB_OUTPUT"
-            echo "Step 2 is not the active step — skipping."
-          fi
+      - name: Get response templates
+        uses: actions/checkout@v4
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.7.0
 
-      - name: Verify graphify-setup/CLI_OK.md
-        if: steps.gate.outputs.active == 'true'
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check CLI proof file
+        id: check-cli-proof
+        continue-on-error: true
         run: |
           set -euo pipefail
           test -f graphify-setup/CLI_OK.md
           test -s graphify-setup/CLI_OK.md
-          echo "OK: CLI proof file found"
-          echo "-----"
-          cat graphify-setup/CLI_OK.md
+          echo "STEP_MESSAGE=graphify-setup/CLI_OK.md exists and is not empty" >> "$GITHUB_OUTPUT"
 
-      - name: Advance README 2 → 3
-        if: steps.gate.outputs.active == 'true'
+      - name: Update comment - step results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/step-results-table.md
+          edit-mode: replace
+          vars: |
+            step_number: 2
+            results_table:
+              - description: ${{ steps.check-cli-proof.outputs.STEP_MESSAGE || 'CLI proof file is valid' }}
+                passed: ${{ steps.check-cli-proof.outcome == 'success' }}
+
+      - name: Fail job if checks failed
+        if: steps.check-cli-proof.outcome == 'failure'
+        run: exit 1
+
+  post_next_step_content:
+    name: Post next step content
+    needs: [find_exercise, check_step_work]
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get response templates
+        uses: actions/checkout@v4
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.7.0
+
+      - name: Create comment - step finished
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/step-finished-prepare-next-step.md
+          vars: |
+            next_step_number: 3
+
+      - name: Create comment - add step content
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: ${{ env.STEP_3_FILE }}
+
+      - name: Create comment - watching for progress
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
+
+      - name: Disable current workflow and enable next one
         run: |
-          chmod +x .github/scripts/update-step.sh
-          .github/scripts/update-step.sh 2 3
-
-      - name: Commit README update
-        if: steps.gate.outputs.active == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git diff --staged --quiet || git commit -m "Step 2 complete — show Step 3"
-          git push
-
-      - name: Comment next step on exercise issue
-        if: steps.gate.outputs.active == 'true'
+          gh workflow disable "${{ github.workflow }}"
+          gh workflow enable "Step 3"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x .github/scripts/post-step-comment.sh
-          .github/scripts/post-step-comment.sh .github/steps/3-cursor-integration.md

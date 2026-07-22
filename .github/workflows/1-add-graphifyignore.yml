@@ -1,68 +1,138 @@
-name: Step 1 — Add graphifyignore
+name: Step 1 # Add graphifyignore
 
-# Grades .graphifyignore, advances README, posts Step 2 on the exercise issue.
+# Checks Step 1: learner committed a valid .graphifyignore
+# Then posts Step 2 on the exercise issue and enables the next workflow.
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-      - master
     paths:
       - ".graphifyignore"
-      - ".github/workflows/1-add-graphifyignore.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: write
   issues: write
 
+env:
+  STEP_2_FILE: ".github/steps/2-install-graphify-cli.md"
+
 jobs:
-  check-graphifyignore:
-    name: Check .grgraphaphifyignore
-    if: ${{ !github.event.repository.is_template }}
+  find_exercise:
+    name: Find Exercise Issue
+    uses: skills/exercise-toolkit/.github/workflows/find-exercise-issue.yml@v0.7.0
+
+  check_step_work:
+    name: Check step work
     runs-on: ubuntu-latest
+    needs: find_exercise
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Only run while Step 1 is active
-        id: gate
-        run: |
-          if grep -q '<details id="1" open>' README.md; then
-            echo "active=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "active=false" >> "$GITHUB_OUTPUT"
-            echo "Step 1 is not the active step — skipping."
-          fi
+      - name: Get response templates
+        uses: actions/checkout@v4
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.7.0
 
-      - name: Verify .graphifyignore
-        if: steps.gate.outputs.active == 'true'
+      - name: Find last comment
+        id: find-last-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          direction: last
+
+      - name: Update comment - checking work
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/checking-work.md
+          edit-mode: replace
+
+      - name: Check .graphifyignore exists and ignores build folders
+        id: check-graphifyignore
+        continue-on-error: true
         run: |
           set -euo pipefail
           test -f .graphifyignore
           grep -q 'node_modules' .graphifyignore
           grep -q '\.next' .graphifyignore
-          echo "OK: .graphifyignore looks good"
+          echo "STEP_MESSAGE=.graphifyignore includes node_modules and .next" >> "$GITHUB_OUTPUT"
 
-      - name: Advance README 1 → 2
-        if: steps.gate.outputs.active == 'true'
+      - name: Update comment - step results
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          comment-id: ${{ steps.find-last-comment.outputs.comment-id }}
+          file: exercise-toolkit/markdown-templates/step-feedback/step-results-table.md
+          edit-mode: replace
+          vars: |
+            step_number: 1
+            results_table:
+              - description: ${{ steps.check-graphifyignore.outputs.STEP_MESSAGE || '.graphifyignore is valid' }}
+                passed: ${{ steps.check-graphifyignore.outcome == 'success' }}
+
+      - name: Fail job if checks failed
+        if: steps.check-graphifyignore.outcome == 'failure'
+        run: exit 1
+
+  post_next_step_content:
+    name: Post next step content
+    needs: [find_exercise, check_step_work]
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_REPOSITORY: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ needs.find_exercise.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get response templates
+        uses: actions/checkout@v4
+        with:
+          repository: skills/exercise-toolkit
+          path: exercise-toolkit
+          ref: v0.7.0
+
+      - name: Create comment - step finished
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/step-finished-prepare-next-step.md
+          vars: |
+            next_step_number: 2
+
+      - name: Create comment - add step content
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: ${{ env.STEP_2_FILE }}
+
+      - name: Create comment - watching for progress
+        uses: GrantBirki/comment@v2.1.1
+        with:
+          repository: ${{ env.ISSUE_REPOSITORY }}
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          file: exercise-toolkit/markdown-templates/step-feedback/watching-for-progress.md
+
+      - name: Disable current workflow and enable next one
         run: |
-          chmod +x .github/scripts/update-step.sh
-          .github/scripts/update-step.sh 1 2
-
-      - name: Commit README update
-        if: steps.gate.outputs.active == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git diff --staged --quiet || git commit -m "Step 1 complete — show Step 2"
-          git push
-
-      - name: Comment next step on exercise issue
-        if: steps.gate.outputs.active == 'true'
+          gh workflow disable "${{ github.workflow }}"
+          gh workflow enable "Step 2"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          chmod +x .github/scripts/post-step-comment.sh
-          .github/scripts/post-step-comment.sh .github/steps/2-install-graphify-cli.md

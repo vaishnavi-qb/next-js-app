@@ -1,20 +1,14 @@
-## ✅ Step 1 complete — `.graphifyignore` looks good!
+## Step 2: Install the Graphify CLI
 
-Nice work. Graphify will now skip build folders and dependencies.
+_Nice work on `.graphifyignore`!_ :sparkles:
 
----
+**What is the Graphify CLI?**: A command-line tool (`graphify`) you install once on your laptop. The package name on PyPI is `graphifyy`.
 
-# Step 2 — Install the Graphify CLI
+Because Actions runs on GitHub’s servers (not your laptop), you leave a **proof file** so we can check that you installed it.
 
-Install Graphify **once on your laptop**, then leave a small proof file so Actions can grade this step.
+### :keyboard: Activity: Install CLI + commit proof
 
-## Why
-
-Graphify is a Python CLI (`graphifyy` package). Each developer installs it locally; CI only checks your proof file.
-
-## :keyboard: Activity: Install CLI + commit proof
-
-1. In a terminal:
+1. In a terminal on your machine:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -29,7 +23,7 @@ mkdir -p graphify-setup
 graphify --version > graphify-setup/CLI_OK.md
 ```
 
-3. Commit and push:
+3. Commit and push to `main`:
 
 ```bash
 git add graphify-setup/CLI_OK.md
@@ -37,17 +31,13 @@ git commit -m "Prove Graphify CLI is installed"
 git push
 ```
 
-4. Wait ~20 seconds — the bot will reply on the **exercise issue** with **Step 3**.
-
-## How CI grades you
-
-Workflow `2-install-graphify-cli.yml` checks that `graphify-setup/CLI_OK.md` exists and is not empty.
+4. Wait about 20 seconds and watch the comments for Step 3.
 
 <details>
-<summary>Having trouble? 🤷</summary>
+<summary>Having trouble? 🤷</summary><br/>
 
-- If `graphify: command not found`, open a new terminal or add `~/.local/bin` to `PATH`.
-- Alternative: `pipx install graphifyy`
+- If `graphify: command not found`, open a new terminal or add `~/.local/bin` to your `PATH`.
+- Alternative install: `pipx install graphifyy`
 - `graphify-setup/CLI_OK.md` must not be empty.
 
 </details>
