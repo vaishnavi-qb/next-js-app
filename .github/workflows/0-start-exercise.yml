@@ -1,7 +1,7 @@
 name: Step 0 — Start exercise
 
-# Runs after the course repo is pushed / created.
-# Opens README Step 1 for the learner.
+# Creates the exercise issue (like GitHub Skills),
+# posts Step 1 as a comment, and opens README Step 1.
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   start:
@@ -33,6 +34,22 @@ jobs:
             echo "advance=false" >> "$GITHUB_OUTPUT"
             echo "Course already started — skipping."
           fi
+
+      - name: Create exercise issue
+        if: steps.gate.outputs.advance == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/scripts/create-exercise-issue.sh
+          .github/scripts/create-exercise-issue.sh
+
+      - name: Post Step 1 instructions as issue comment
+        if: steps.gate.outputs.advance == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/scripts/post-step-comment.sh
+          .github/scripts/post-step-comment.sh .github/steps/1-add-graphifyignore.md
 
       - name: Advance README 0 → 1
         if: steps.gate.outputs.advance == 'true'

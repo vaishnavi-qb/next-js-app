@@ -1,7 +1,6 @@
 name: Step 3 — Cursor integration
 
-# Grades: learner committed .cursor/rules/graphify.mdc
-# Then advances README 3 → 4
+# Grades Cursor rule, advances README, posts Step 4 on the exercise issue.
 
 on:
   workflow_dispatch:
@@ -15,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   check-cursor-rule:
@@ -57,3 +57,11 @@ jobs:
           git add README.md
           git diff --staged --quiet || git commit -m "Step 3 complete — show Step 4"
           git push
+
+      - name: Comment next step on exercise issue
+        if: steps.gate.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/scripts/post-step-comment.sh
+          .github/scripts/post-step-comment.sh .github/steps/4-build-first-graph.md

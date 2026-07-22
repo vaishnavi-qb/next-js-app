@@ -1,16 +1,32 @@
+## ✅ Step 2 complete — Graphify CLI proof found!
+
+Great — your CLI install is recorded in the repo.
+
+---
+
 # Step 3 — Connect Graphify to Cursor
 
-## Goal
+Wire Graphify into Cursor so the assistant prefers graph queries for this project.
 
-Add a Cursor rule so the AI prefers Graphify queries for this project.
+## :keyboard: Activity: Install Cursor rule
 
-## Do this
+1. From the project root:
 
 ```bash
 graphify cursor install --project
 ```
 
-Commit `.cursor/rules/graphify.mdc`.
+2. Confirm this file exists: `.cursor/rules/graphify.mdc`
+
+3. Commit and push:
+
+```bash
+git add .cursor/rules/graphify.mdc
+git commit -m "Add Graphify Cursor rule"
+git push
+```
+
+4. Wait ~20 seconds — the bot will reply on the **exercise issue** with **Step 4**.
 
 ## Fallback template
 
@@ -34,3 +50,11 @@ For architecture or "how does X work" questions in this repo:
 ## How CI grades you
 
 Workflow `3-cursor-integration.yml` checks that `.cursor/rules/graphify.mdc` exists.
+
+<details>
+<summary>Having trouble? 🤷</summary>
+
+- Use `--project` so the rule is stored in the repo.
+- Path must be `.cursor/rules/graphify.mdc`.
+
+</details>

@@ -37,7 +37,10 @@ A checked-in Graphify setup for this repo:
 2. Enable Actions: **Settings → Actions → General → Allow all actions**.
 3. Give workflows write access: **Settings → Actions → General → Workflow permissions → Read and write permissions** → Save.
 4. Open the **Actions** tab — workflow `0-start-exercise` should run (or click **Run workflow**).
-5. Wait about **20 seconds**, then **refresh this README**.
+5. Wait about **20 seconds**, then:
+   - **Refresh this README** (Step 1 opens)
+   - Open the new **Issues** tab item: `Exercise: Graphify Skills — SimpleShop`  
+     (same style as [Introduction to GitHub #1](https://github.com/vaishnavi-qb/skills-introduction-to-github/issues/1) — next steps arrive as comments)
 
 > Shop app docs (how to run Next.js): see [docs/SHOP.md](docs/SHOP.md).
 

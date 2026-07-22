@@ -1,7 +1,6 @@
 name: Step 1 — Add graphifyignore
 
-# Grades: learner committed a valid .graphifyignore
-# Then advances README 1 → 2
+# Grades .graphifyignore, advances README, posts Step 2 on the exercise issue.
 
 on:
   workflow_dispatch:
@@ -15,10 +14,11 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   check-graphifyignore:
-    name: Check .graphifyignore
+    name: Check .grgraphaphifyignore
     if: ${{ !github.event.repository.is_template }}
     runs-on: ubuntu-latest
     steps:
@@ -58,3 +58,11 @@ jobs:
           git add README.md
           git diff --staged --quiet || git commit -m "Step 1 complete — show Step 2"
           git push
+
+      - name: Comment next step on exercise issue
+        if: steps.gate.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/scripts/post-step-comment.sh
+          .github/scripts/post-step-comment.sh .github/steps/2-install-graphify-cli.md

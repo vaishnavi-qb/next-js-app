@@ -1,7 +1,6 @@
 name: Step 2 — Install Graphify CLI
 
-# Grades: learner committed graphify-setup/CLI_OK.md
-# Then advances README 2 → 3
+# Grades CLI proof file, advances README, posts Step 3 on the exercise issue.
 
 on:
   workflow_dispatch:
@@ -15,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   check-cli-proof:
@@ -59,3 +59,11 @@ jobs:
           git add README.md
           git diff --staged --quiet || git commit -m "Step 2 complete — show Step 3"
           git push
+
+      - name: Comment next step on exercise issue
+        if: steps.gate.outputs.active == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x .github/scripts/post-step-comment.sh
+          .github/scripts/post-step-comment.sh .github/steps/3-cursor-integration.md
